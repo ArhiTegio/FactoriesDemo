@@ -1,0 +1,75 @@
+﻿@page "/statistics"
+@using FactoriesDemo.Data;
+@inject FactoriesWorksService FactoriesWorks
+
+<h3>Статистика</h3>
+@if (statisticsModel.FactoriesWork == null)
+{
+        <p><em>Загружается...</em></p>
+}
+else
+{
+    <h1>Статистика по товаром в среднем перевозимым грузовиками</h1>
+     <table class="table">
+        <thead>
+            <tr>
+                <th>Название товара</th>
+                <th>Среднее </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in statisticsModel.FactoriesWork.Statistics.StatisticsTruckingItems)
+            {
+                  <tr>
+                    <td>@e.Key</td>
+                    <td>@e.Value.Aggregate((x, y) => x + y) / e.Value.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h1>Поступления продукции на склад</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Название фабрики</th>
+                <th>Название оборудования</th>
+                <th>Кол-во</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in statisticsModel.FactoriesWork.Statistics.StatisticsWarehouses)
+            {
+                <tr>
+                    <td>@e.Create.ToString()</td>
+                    <td>@e.NameFactory</td>
+                    <td>@e.NameItem</td>
+                    <td>@e.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code 
+{
+    StatisticsModel statisticsModel;
+    protected override Task OnInitializedAsync() 
+    {
+        statisticsModel = new StatisticsModel(FactoriesWorks);
+        statisticsModel.PropertyChanged += ViewModelPropertyChanged;
+
+        return base.OnInitializedAsync();
+    }
+
+    private void ViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        statisticsModel.PropertyChanged -= ViewModelPropertyChanged;
+    }
+}
